@@ -1,0 +1,354 @@
+/* Vendors: real records only, as three ledger-like cards. The modal is the
+   one place this page uses a blurred backdrop. All classes prefixed vend-. */
+
+.vend-container {
+  padding-block: clamp(20px, 3vw, 40px) var(--section-y-tight);
+}
+
+.vend-header {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: end;
+  margin-bottom: clamp(32px, 5vw, 72px);
+}
+
+.vend-header .us-eyebrow {
+  grid-column: 1 / -1;
+}
+
+.vend-title {
+  grid-column: 1 / span 7;
+  font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+}
+
+.vend-lead {
+  grid-column: 8 / span 5;
+  margin-bottom: 0;
+}
+
+/* ---- Cards ------------------------------------------------------------- */
+
+.vend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.vend-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform var(--dur-medium) var(--ease),
+              box-shadow var(--dur-medium) var(--ease),
+              border-color var(--dur-medium) var(--ease);
+}
+
+.vend-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.vend-card-header {
+  position: relative;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background:
+    radial-gradient(80% 90% at 100% 0%, rgba(242, 162, 12, 0.42), rgba(242, 162, 12, 0) 70%),
+    var(--ink-900);
+  color: var(--text-on-deep);
+}
+
+.vend-card-num {
+  display: block;
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--amber-300);
+}
+
+.vend-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-align: left;
+  color: var(--ivory-100);
+}
+
+.vend-rep {
+  margin: var(--space-2) 0 0;
+  font-size: 0.9375rem;
+  color: var(--text-on-deep-muted);
+}
+
+.vend-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.vend-details {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vend-detail {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.vend-detail:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.vend-detail-icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  color: var(--accent-ink);
+}
+
+.vend-detail-text {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.vend-detail-link {
+  justify-self: start;
+  min-height: 24px;
+  color: var(--text);
+}
+
+.vend-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.vend-actions .us-btn {
+  padding-inline: var(--space-3);
+  font-size: 0.9375rem;
+}
+
+.vend-btn-whatsapp {
+  background: var(--teal-600);
+  color: var(--white);
+}
+
+.vend-btn-whatsapp:hover {
+  background: var(--teal-700);
+  box-shadow: 0 10px 24px rgba(15, 107, 102, 0.3);
+}
+
+.vend-whatsapp-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* ---- Explore ------------------------------------------------------------ */
+
+.vend-explore {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-strong);
+}
+
+/* ---- Modal --------------------------------------------------------------- */
+
+.vend-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(21, 23, 28, 0.62);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vend-modal-overlay {
+    background: rgba(21, 23, 28, 0.42);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .vend-modal-overlay {
+    background: rgba(21, 23, 28, 0.78);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.vend-modal {
+  width: min(560px, 100%);
+  max-height: min(680px, calc(100vh - 32px));
+  max-height: min(680px, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  text-align: left;
+}
+
+.vend-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.vend-modal-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+.vend-modal-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--ivory-200);
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: background-color var(--dur-quick) var(--ease),
+              transform var(--dur-fast) var(--ease-spring);
+}
+
+.vend-modal-close:hover {
+  background: var(--amber-500);
+  transform: rotate(90deg);
+}
+
+.vend-modal-body {
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-6) var(--space-5);
+}
+
+.vend-product {
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.vend-product-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-4);
+  align-items: baseline;
+}
+
+.vend-product-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.vend-product-description {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.vend-product-price {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.vend-modal-note {
+  margin-top: var(--space-3);
+}
+
+/* ---- Tablet and phone ---------------------------------------------------- */
+
+@media (max-width: 1000px) {
+  .vend-title,
+  .vend-lead {
+    grid-column: 1 / -1;
+  }
+
+  .vend-lead {
+    margin-top: var(--space-4);
+  }
+
+  .vend-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vend-card {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .vend-card {
+    display: flex;
+  }
+
+  .vend-card-num {
+    margin-bottom: var(--space-4);
+  }
+
+  .vend-explore .us-btn {
+    width: 100%;
+  }
+
+  /* On a phone the modal becomes a sheet rising from the bottom edge. */
+  .vend-modal-overlay {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .vend-modal {
+    width: 100%;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

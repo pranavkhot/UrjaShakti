@@ -1,0 +1,141 @@
+{
+  "root": "C:\\Users\\Lenovo\\Downloads\\URJASHAKTI CALCULATOR UPDT copy",
+  "resume": false,
+  "framework": [
+    "next",
+    "react-router",
+    "react"
+  ],
+  "styling": [
+    "tailwind",
+    "emotion"
+  ],
+  "motion": [
+    "motion/framer-motion"
+  ],
+  "three_d": [],
+  "ui_kits": [
+    "mui",
+    "headlessui"
+  ],
+  "package_manager": "npm",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "node": true,
+  "deps_count": 56,
+  "routes": [
+    {
+      "route": "/",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/*",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/calculator",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/dashboard",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/energy-estimation",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/login",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/report",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/signup",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/vendor",
+      "file": "src/App.tsx"
+    },
+    {
+      "route": "/home/*",
+      "file": "src/App.tsx"
+    }
+  ],
+  "tailwind_config": [
+    "tailwind.config.js"
+  ],
+  "style_entry_candidates": [
+    "src/index.css"
+  ],
+  "brand_assets": [
+    "public/favicon.ico",
+    "public/logo192.png",
+    "public/logo512.png"
+  ],
+  "user_supplied_assets": [],
+  "tests": [],
+  "counts": {
+    "files": 107,
+    "ui": 25,
+    "logic": 16,
+    "style": 20,
+    "assets": 16
+  },
+  "ui_files": [
+    "public/index.html",
+    "src/App.tsx",
+    "src/AuthContext.tsx",
+    "src/index.tsx",
+    "src/components/About/About.tsx",
+    "src/components/Calculator/Calculator.tsx",
+    "src/components/CallToAction/CallToAction.tsx",
+    "src/components/ConsumptionCalculator/ConsumptionCalculator.tsx",
+    "src/components/context/AuthContext.tsx",
+    "src/components/Dashboard/Dashboard.tsx",
+    "src/components/Features/Features.tsx",
+    "src/components/Footer/Footer.tsx",
+    "src/components/Header/Header.tsx",
+    "src/components/Loading/Loading.tsx",
+    "src/components/LoggedInHome/LoggedInHome.tsx",
+    "src/components/Login/Login.tsx",
+    "src/components/MinimalHeader/MinimalHeader.tsx",
+    "src/components/Notification/Notification.tsx",
+    "src/components/ProtectedRoute/ProtectedRoute.tsx",
+    "src/components/Report/Report.tsx",
+    "src/components/Services/Services.tsx",
+    "src/components/Signup/Signup.tsx",
+    "src/components/TidioChatbot/TidioChatbot.tsx",
+    "src/components/Vendor/Vendor.tsx",
+    "src/components/Welcome/Welcome.tsx"
+  ],
+  "style_files": [
+    "src/App.css",
+    "src/index.css",
+    "src/components/About/About.css",
+    "src/components/Calculator/Calculator.css",
+    "src/components/CallToAction/CallToAction.css",
+    "src/components/ConsumptionCalculator/ConsumptionCalculator.css",
+    "src/components/Dashboard/Dashboard.css",
+    "src/components/Features/Features.css",
+    "src/components/Footer/Footer.css",
+    "src/components/Header/Header.css",
+    "src/components/Loading/Loading.css",
+    "src/components/LoggedInHome/LoggedInHome.css",
+    "src/components/Login/Login.css",
+    "src/components/MinimalHeader/MinimalHeader.css",
+    "src/components/Notification/Notification.css",
+    "src/components/Report/Report.css",
+    "src/components/Services/Services.css",
+    "src/components/Signup/Signup.css",
+    "src/components/Vendor/Vendor.css",
+    "src/components/Welcome/Welcome.css"
+  ]
+}

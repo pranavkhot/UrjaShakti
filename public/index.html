@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Add the viewport meta tag below -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UrjaShakti Solar Calculator</title>
+    <!-- Other tags -->
+    <script>
+      // Hidden start states apply only while JavaScript is running. If the
+      // animation module never arrives, the failsafe below shows everything.
+      (function () {
+        var h = document.documentElement;
+        h.classList.add('js');
+        setTimeout(function () {
+          h.classList.add('motion-ready');
+        }, 3000);
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+  </html>

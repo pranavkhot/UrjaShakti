@@ -1,0 +1,22 @@
+{
+  "label": "ref",
+  "base": "https://wise.com",
+  "routes": {
+    "/": {
+      "errors": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "Framing 'https://16544908.fls.doubleclick.net/' violates the following Content Security Policy directive: \"frame-src youtube.com www.youtube.com www.youtube-nocookie.com https://vars.hotjar.com https://bid.g.doubleclick.net https://www.googletagmanager.com https://insight.adsrvr.org https://match.ad",
+        "Loading the image 'https://insight.adsrvr.org/track/pxl/?adv=jkdnggb&ct=0:bvmra0t&fmt=3&gtmcb=1146242511' violates the following Content Security Policy directive: \"img-src 'self' data: blob: *.facebook.com https://wise.com https://wise-sandbox.com https://gtm.wise.com https://sst.wise.com https://t",
+        "Loading the image 'https://insight.adsrvr.org/track/pxl/?adv=jkdnggb&ct=0:bvmra0t&fmt=3&gtmcb=33728098' violates the following Content Security Policy directive: \"img-src 'self' data: blob: *.facebook.com https://wise.com https://wise-sandbox.com https://gtm.wise.com https://sst.wise.com https://tw-"
+      ],
+      "shots": {
+        "1440": "home@1440.jpg",
+        "390": "home@390.jpg"
+      },
+      "top": {
+        "1440": "home@1440-top.jpg",
+        "390": "home@390-top.jpg"
+      }
+    }
+  }
+}

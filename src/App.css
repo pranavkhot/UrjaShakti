@@ -1,0 +1,93 @@
+/* App-level globals.
+   The design tokens live in src/styles/tokens.css. The legacy variable names
+   below are kept because several screens still reference them; they now point
+   at the new palette so the whole app moves together.
+
+   The legacy rules are written with :where() so they carry no specificity.
+   Any component stylesheet overrides them with a plain class, which is what
+   the redesigned pages rely on. */
+
+:root {
+  --primary-color: var(--accent);
+  --secondary-color: var(--money);
+  --background-color: var(--bg);
+  --text-color: var(--text);
+  --light-text-color: var(--text-muted);
+  --primary-hover-color: var(--sky-600);
+  --muted-text-color: var(--text-muted);
+  --white: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.App {
+  text-align: center;
+}
+
+main {
+  margin: 0 auto;
+  padding: 0;
+  /* Elements waiting off to one side for their entrance must never widen the
+     page. `clip` (unlike `hidden`) leaves position: sticky working. */
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-control);
+  border: none;
+  transition: background-color var(--dur-quick) var(--ease);
+}
+
+/* Screens that have not been redesigned yet keep the old centred heading and
+   the old section padding. Both are zero-specificity, so a redesigned
+   component simply sets its own. */
+:where(h2) {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+:where(section) {
+  padding: 4rem 0;
+}
+
+:where(p) {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   The redesigned public homepage sets its own rhythm through the section
+   shell in tokens.css.
+   -------------------------------------------------------------------------- */
+
+.us-home {
+  text-align: left;
+}
+
+:where(.us-home) :where(section) {
+  padding: 0;
+}
+
+:where(.us-home) :where(p) {
+  margin-bottom: 0;
+}

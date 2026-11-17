@@ -1,0 +1,31 @@
+pair                         fg        bg        ratio  AA-body  AA-large
+body on page                 #0E2433   #EAF4FD   14.30  PASS     PASS
+muted on page                #49677C   #EAF4FD    5.37  PASS     PASS
+body on white                #0E2433   #FFFFFF   15.92  PASS     PASS
+muted on white               #49677C   #FFFFFF    5.98  PASS     PASS
+body on glass fallback       #0E2433   #F5FAFE   15.16  PASS     PASS
+muted on glass fallback      #49677C   #F5FAFE    5.69  PASS     PASS
+link accent on page          #0A5CAF   #EAF4FD    5.96  PASS     PASS
+link accent on white         #0A5CAF   #FFFFFF    6.64  PASS     PASS
+white on accent button       #FFFFFF   #0B74DB    4.63  PASS     PASS
+white on green fill          #FFFFFF   #126B38    6.59  PASS     PASS
+green figure on page         #157539   #EAF4FD    5.19  PASS     PASS
+green figure on white        #157539   #FFFFFF    5.78  PASS     PASS
+green figure on glass        #157539   #F5FAFE    5.50  PASS     PASS
+white on deep band           #FFFFFF   #0D2B40   14.62  PASS     PASS
+pale on deep band            #B9D4E6   #0D2B40    9.48  PASS     PASS
+accent on deep band          #6FC0FF   #0D2B40    7.42  PASS     PASS
+green on deep band           #5FD98D   #0D2B40    8.21  PASS     PASS
+ink on yellow pin            #0E2433   #F5B81A    8.91  PASS     PASS
+ink on glass over black      #0E2433   #C7C7C7    9.42  PASS     PASS
+muted on glass over black    #344C5D   #C7C7C7    5.31  PASS     PASS
+money on glass over black    #0D5729   #C7C7C7    5.15  PASS     PASS
+accent on glass over black   #084E95   #C7C7C7    4.90  PASS     PASS
+ink on glass over deep band  #0E2433   #C8D1D7   10.28  PASS     PASS
+muted on glass over deep band #344C5D   #C8D1D7    5.80  PASS     PASS
+money on glass over deep band #0D5729   #C8D1D7    5.62  PASS     PASS
+accent on glass over deep band #084E95   #C8D1D7    5.35  PASS     PASS
+ink on glass solid fallback  #0E2433   #F5FAFE   15.16  PASS     PASS
+muted on glass solid fallback #344C5D   #F5FAFE    8.55  PASS     PASS
+money on glass solid fallback #0D5729   #F5FAFE    8.29  PASS     PASS
+accent on glass solid fallback #084E95   #F5FAFE    7.89  PASS     PASS

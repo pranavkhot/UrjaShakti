@@ -1,0 +1,252 @@
+/* Hero. Ivory page, one sun, a picture window onto a real roof. */
+
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  /* The floating nav sits over the top of the hero. */
+  margin-top: calc(-1 * (var(--nav-h) + var(--nav-top)));
+  padding-top: calc(var(--nav-h) + var(--nav-top));
+  background: var(--bg);
+}
+
+.home-hero-sun {
+  position: absolute;
+  top: -22vw;
+  right: -12vw;
+  width: 62vw;
+  height: 62vw;
+  max-width: 980px;
+  max-height: 980px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(247, 183, 51, 0.5) 0%,
+    rgba(247, 183, 51, 0.22) 34%,
+    rgba(247, 183, 51, 0.06) 56%,
+    rgba(247, 183, 51, 0) 70%
+  );
+  pointer-events: none;
+}
+
+.home-hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: center;
+  padding-block: clamp(40px, 6vw, 88px) var(--section-y);
+  min-height: min(92vh, 980px);
+}
+
+/* ---- Copy ------------------------------------------------------------- */
+
+.home-hero-copy {
+  grid-column: 1 / span 7;
+}
+
+.home-hero-title {
+  max-width: 11ch;
+}
+
+.home-hero-lead {
+  margin-top: var(--space-6);
+  max-width: 46ch;
+}
+
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.home-hero-facts {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: var(--space-7);
+  margin: var(--space-8) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-strong);
+}
+
+.home-hero-fact dt {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.home-hero-fact dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+/* ---- Visual ----------------------------------------------------------- */
+
+.home-hero-visual {
+  grid-column: 8 / span 5;
+  position: relative;
+  margin: 0;
+}
+
+.home-hero-window {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  box-shadow: var(--shadow-lg);
+}
+
+.home-hero-window > div {
+  position: relative;
+}
+
+.home-hero-window img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-hero-trace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.home-hero-trace polygon {
+  fill: var(--amber-400);
+  stroke: var(--amber-400);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.home-hero-trace circle {
+  fill: var(--ivory-50);
+  stroke: var(--amber-500);
+  stroke-width: 3;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.home-hero-card {
+  position: absolute;
+  left: calc(-1 * clamp(24px, 6vw, 96px));
+  bottom: clamp(20px, 3vw, 40px);
+  width: min(320px, 78%);
+  margin: 0;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+}
+
+.home-hero-card-label {
+  margin: 0 0 var(--space-4);
+}
+
+.home-hero-card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.home-hero-card-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.home-hero-card-list b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.home-hero-card-total {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--glass-edge);
+}
+
+.home-hero-card-total > span {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.home-hero-card-total small {
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* ---- Tablet ----------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .home-hero-copy {
+    grid-column: 1 / span 7;
+  }
+
+  .home-hero-facts {
+    gap: var(--space-5);
+  }
+
+  .home-hero-fact dd {
+    font-size: 1.125rem;
+  }
+}
+
+/* ---- Phone: the picture leads into the copy --------------------------- */
+
+@media (max-width: 860px) {
+  .home-hero-grid {
+    display: block;
+    min-height: 0;
+    padding-top: var(--space-6);
+  }
+
+  .home-hero-sun {
+    top: -40vw;
+    right: -40vw;
+    width: 120vw;
+    height: 120vw;
+  }
+
+  .home-hero-visual {
+    margin-top: var(--space-8);
+    padding-bottom: 96px;
+  }
+
+  .home-hero-window {
+    aspect-ratio: 4 / 4.4;
+  }
+
+  .home-hero-card {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: 0;
+    width: auto;
+  }
+
+  .home-hero-facts {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+  }
+
+  .home-hero-fact:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .home-hero-actions .us-btn {
+    flex: 1 1 auto;
+  }
+}

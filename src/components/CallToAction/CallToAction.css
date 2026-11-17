@@ -1,0 +1,63 @@
+/* Closing band: solar amber, ink type, rays rising from the lower edge. */
+
+.home-cta {
+  position: relative;
+  overflow: hidden;
+  /* The footer's rounded top corners sit on this band. */
+  padding-bottom: calc(var(--section-y-tight) + var(--radius-panel));
+  margin-bottom: calc(-1 * var(--radius-panel));
+}
+
+.home-cta-rays {
+  position: absolute;
+  right: -4%;
+  bottom: var(--radius-panel);
+  width: min(620px, 70vw);
+  pointer-events: none;
+}
+
+.home-cta-rays line {
+  stroke: rgba(21, 23, 28, 0.2);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.home-cta-rays circle {
+  fill: rgba(255, 210, 122, 0.7);
+}
+
+.home-cta-inner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+
+.home-cta-title {
+  max-width: 16ch;
+  font-size: clamp(2.25rem, 5.4vw, 4.5rem);
+}
+
+.home-cta-lead {
+  margin-top: var(--space-5);
+  max-width: 44ch;
+  color: #3b2a05;
+}
+
+.home-cta-button {
+  min-height: 64px;
+  padding-inline: var(--space-7);
+  font-size: 1.125rem;
+}
+
+@media (max-width: 720px) {
+  .home-cta-button {
+    width: 100%;
+  }
+
+  .home-cta-inner > div:last-child {
+    width: 100%;
+  }
+}

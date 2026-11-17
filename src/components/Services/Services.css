@@ -1,0 +1,288 @@
+/* Subsidy staircase, report index, partners table. */
+
+/* ---- Subsidy ---------------------------------------------------------- */
+
+.home-subsidy-inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: end;
+}
+
+.home-subsidy-copy {
+  grid-column: 1 / span 6;
+}
+
+.home-subsidy-lead {
+  margin-top: var(--space-5);
+}
+
+.home-subsidy-tiers {
+  grid-column: 8 / span 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  align-items: end;
+  height: clamp(300px, 34vw, 420px);
+  margin: 0;
+}
+
+.home-subsidy-tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: var(--space-4);
+}
+
+/* The step itself, behind the text. */
+.home-subsidy-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  background: linear-gradient(rgba(247, 242, 232, 0.2), rgba(247, 242, 232, 0.06));
+  border: 1px solid rgba(247, 242, 232, 0.22);
+  border-bottom: 0;
+  transform-origin: bottom;
+}
+
+.home-subsidy-tier:last-child .home-subsidy-bar {
+  background: var(--amber-500);
+  border-color: var(--amber-500);
+}
+
+.home-subsidy-tier:last-child {
+  color: var(--ink-900);
+}
+
+.home-subsidy-tier dt,
+.home-subsidy-tier dd {
+  position: relative;
+}
+
+.home-subsidy-tier dt {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  opacity: 0.85;
+}
+
+.home-subsidy-tier dd {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.home-subsidy-tier .us-figure--inline {
+  font-size: clamp(22px, 2.2vw, 30px);
+}
+
+.home-subsidy-note {
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+/* ---- Report ----------------------------------------------------------- */
+
+.home-report-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: end;
+  margin-bottom: clamp(40px, 5vw, 72px);
+}
+
+.home-report-head > div {
+  grid-column: 1 / span 7;
+}
+
+.home-report-head > .us-lead {
+  grid-column: 9 / span 4;
+}
+
+.home-report-image {
+  aspect-ratio: 21 / 8;
+}
+
+.home-report-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* An index, not a row of cards: five columns ruled off at the top. */
+.home-report-groups {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-top: clamp(40px, 5vw, 72px);
+}
+
+.home-report-group {
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--ink-900);
+  transition: border-color var(--dur-medium) var(--ease);
+}
+
+.home-report-group:hover {
+  border-top-color: var(--amber-500);
+}
+
+.home-report-index {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-ink);
+  margin-bottom: var(--space-2);
+}
+
+.home-report-group-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.home-report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* ---- Partners --------------------------------------------------------- */
+
+.home-partners-inner {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: center;
+}
+
+.home-partners-copy {
+  grid-column: 1 / span 5;
+}
+
+.home-partners-lead {
+  margin-top: var(--space-5);
+}
+
+.home-partners-cta {
+  margin-top: var(--space-6);
+}
+
+.home-partners-table-wrap {
+  grid-column: 7 / span 6;
+}
+
+.home-partners-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.home-partners-table caption {
+  caption-side: bottom;
+  padding-top: var(--space-4);
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.home-partners-table thead th {
+  padding: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--ink-900);
+}
+
+.home-partners-table tbody th,
+.home-partners-table tbody td {
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--dur-quick) var(--ease);
+}
+
+.home-partners-table tbody th {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.home-partners-table tbody tr:hover > * {
+  background: var(--ivory-100);
+}
+
+.home-partners-table th:last-child,
+.home-partners-table td:last-child {
+  text-align: right;
+}
+
+.home-partners-price {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---- Tablet and phone -------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .home-subsidy-copy,
+  .home-subsidy-tiers,
+  .home-report-head > div,
+  .home-report-head > .us-lead,
+  .home-partners-copy,
+  .home-partners-table-wrap {
+    grid-column: 1 / -1;
+  }
+
+  .home-subsidy-tiers {
+    margin-top: var(--space-7);
+    height: 320px;
+  }
+
+  .home-report-head > .us-lead {
+    margin-top: var(--space-5);
+  }
+
+  .home-report-image {
+    aspect-ratio: 16 / 9;
+  }
+
+  .home-report-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-partners-table-wrap {
+    margin-top: var(--space-7);
+  }
+}
+
+@media (max-width: 560px) {
+  .home-subsidy-tier {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .home-subsidy-tier .us-figure--inline {
+    font-size: 19px;
+  }
+
+  .home-report-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .home-partners-table tbody th {
+    font-size: 1.0625rem;
+  }
+}

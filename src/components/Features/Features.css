@@ -1,0 +1,468 @@
+/* How it works: a sticky stage beside three steps, then the method bento. */
+
+.home-journey-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: end;
+  margin-bottom: clamp(48px, 6vw, 96px);
+}
+
+.home-journey-head .us-eyebrow {
+  grid-column: 1 / -1;
+}
+
+.home-journey-title {
+  grid-column: 1 / span 7;
+  max-width: 16ch;
+}
+
+.home-journey-head .us-lead {
+  grid-column: 9 / span 4;
+}
+
+.home-journey-body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: start;
+}
+
+/* ---- Stage ------------------------------------------------------------ */
+
+.home-journey-stage {
+  grid-column: 1 / span 6;
+  position: sticky;
+  top: calc(var(--nav-h) + var(--nav-top) + 24px);
+}
+
+.home-journey-panel {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-height: calc(100vh - var(--nav-h) - 96px);
+  border-radius: var(--radius-panel);
+  background:
+    radial-gradient(90% 70% at 80% 0%, rgba(242, 162, 12, 0.2), rgba(242, 162, 12, 0) 60%),
+    var(--ink-900);
+  overflow: hidden;
+}
+
+.home-journey-art {
+  position: absolute;
+  inset: 8%;
+  display: grid;
+  place-items: center;
+}
+
+.home-journey-art svg {
+  width: 100%;
+  height: 100%;
+}
+
+.art-grid {
+  stroke: rgba(247, 242, 232, 0.07);
+  stroke-width: 1;
+}
+
+.art-stroke {
+  stroke: var(--amber-400);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.art-stroke--soft {
+  stroke: rgba(247, 242, 232, 0.5);
+  stroke-width: 2.5;
+}
+
+.art-fill {
+  fill: rgba(247, 183, 51, 0.16);
+}
+
+.art-dot {
+  fill: var(--ink-900);
+  stroke: var(--amber-400);
+  stroke-width: 4;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.art-rule {
+  stroke: rgba(247, 242, 232, 0.28);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.art-bar {
+  fill: var(--amber-400);
+}
+
+.art-bar--teal {
+  fill: var(--teal-300);
+}
+
+.art-label {
+  fill: rgba(247, 242, 232, 0.7);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.art-label--big {
+  fill: var(--amber-400);
+  font-size: 56px;
+  font-weight: 700;
+}
+
+.home-journey-count {
+  position: absolute;
+  left: var(--space-5);
+  bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: rgba(247, 242, 232, 0.6);
+}
+
+.home-journey-count span:first-child {
+  color: var(--amber-400);
+}
+
+.home-journey-count i {
+  width: 40px;
+  height: 1px;
+  background: rgba(247, 242, 232, 0.3);
+}
+
+/* ---- Steps ------------------------------------------------------------ */
+
+.home-journey-steps {
+  grid-column: 8 / span 5;
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--space-7);
+}
+
+/* The energy line: a rail that fills with the scroll. */
+.home-journey-rail {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.home-journey-rail span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(var(--amber-400), var(--amber-600));
+  transform-origin: top;
+}
+
+.home-journey-step {
+  position: relative;
+  padding-block: clamp(40px, 9vh, 96px);
+}
+
+.home-journey-rail + .home-journey-step {
+  padding-top: 0;
+}
+
+/* The node on the rail. */
+.home-journey-step::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-7) - 6px);
+  top: clamp(40px, 9vh, 96px);
+  margin-top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--border-strong);
+  transition: background-color var(--dur-medium) var(--ease),
+              border-color var(--dur-medium) var(--ease),
+              box-shadow var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease-spring);
+}
+
+.home-journey-rail + .home-journey-step::before {
+  top: 0;
+}
+
+.home-journey-step.is-active::before {
+  background: var(--amber-500);
+  border-color: var(--amber-500);
+  box-shadow: 0 0 0 6px rgba(242, 162, 12, 0.2);
+  transform: scale(1.15);
+}
+
+.home-journey-num {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--accent-ink);
+  margin-bottom: var(--space-4);
+}
+
+.home-journey-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background-color var(--dur-medium) var(--ease),
+              border-color var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease-spring);
+}
+
+.home-journey-step.is-active .home-journey-icon {
+  background: var(--amber-500);
+  border-color: var(--amber-500);
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.home-journey-step p {
+  margin: var(--space-3) 0 var(--space-4);
+  color: var(--text-muted);
+  max-width: 44ch;
+}
+
+.home-journey-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.home-journey-link svg {
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.home-journey-link:hover svg {
+  transform: translateX(4px);
+}
+
+/* ---- Method bento ----------------------------------------------------- */
+
+.home-method-head {
+  margin-bottom: clamp(40px, 5vw, 72px);
+}
+
+.home-method-head .us-h2 {
+  max-width: 18ch;
+}
+
+.home-method-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.home-method-cell {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: var(--radius-card);
+  background: var(--ink-800);
+  border: 1px solid var(--border-on-deep);
+  transition: border-color var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease);
+}
+
+.home-method-cell:hover {
+  border-color: rgba(247, 183, 51, 0.5);
+}
+
+.home-method-cell--formula {
+  grid-column: span 7;
+}
+
+.home-method-cell--hero {
+  grid-column: span 5;
+  background: var(--amber-500);
+  border-color: var(--amber-500);
+  color: var(--ink-900);
+  --text-muted: #3b2a05;
+}
+
+.home-method-cell--stat {
+  grid-column: span 4;
+}
+
+.home-method-cell--limits {
+  grid-column: span 12;
+  background: transparent;
+}
+
+.home-method-label {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--amber-300);
+}
+
+.home-method-formulae {
+  margin: 0;
+}
+
+.home-method-formulae > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.6fr) 1fr;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--border-on-deep);
+}
+
+.home-method-formulae dt {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.home-method-formulae dd {
+  margin: 0;
+  color: var(--text-on-deep-muted);
+}
+
+.home-method-source {
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-on-deep);
+  font-size: var(--text-sm);
+  color: var(--text-on-deep-muted);
+}
+
+.home-method-big {
+  font-size: clamp(72px, 10vw, 136px);
+}
+
+.home-method-cell--hero .us-figure-caption {
+  max-width: 28ch;
+  font-size: 1rem;
+}
+
+.home-method-roof {
+  position: absolute;
+  right: -24px;
+  bottom: -28px;
+  width: 190px;
+  opacity: 0.9;
+}
+
+.home-method-roof .roof-outer {
+  fill: none;
+  stroke: var(--ink-900);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.home-method-roof .roof-inner {
+  fill: var(--ink-900);
+}
+
+.home-method-cell--stat .us-figure {
+  margin: 0;
+  color: var(--ivory-100);
+}
+
+.home-method-cell--limits ul {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.home-method-cell--limits li {
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--amber-500);
+  color: var(--text-on-deep-muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+/* ---- Tablet and phone -------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .home-journey-title,
+  .home-journey-head .us-lead {
+    grid-column: 1 / -1;
+  }
+
+  .home-journey-head .us-lead {
+    margin-top: var(--space-5);
+  }
+
+  .home-journey-stage {
+    grid-column: 1 / -1;
+    position: sticky;
+    top: calc(var(--nav-h) + var(--nav-top) + 8px);
+    z-index: 2;
+    margin-bottom: var(--space-7);
+  }
+
+  .home-journey-panel {
+    aspect-ratio: 16 / 9;
+  }
+
+  .home-journey-art {
+    inset: 4%;
+  }
+
+  .home-journey-steps {
+    grid-column: 1 / -1;
+    padding-left: var(--space-6);
+  }
+
+  .home-journey-step::before {
+    left: calc(-1 * var(--space-6) - 6px);
+  }
+
+  .home-method-cell--formula,
+  .home-method-cell--hero {
+    grid-column: span 12;
+  }
+
+  .home-method-cell--limits ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  /* A sticky picture would eat too much of a phone screen. */
+  .home-journey-stage {
+    position: relative;
+    top: 0;
+  }
+
+  .home-journey-panel {
+    aspect-ratio: 4 / 3;
+  }
+
+  .home-method-cell--stat {
+    grid-column: span 12;
+  }
+
+  .home-method-formulae > div {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

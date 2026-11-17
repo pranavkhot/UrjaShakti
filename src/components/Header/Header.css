@@ -1,0 +1,388 @@
+/* The navigation: a floating glass capsule.
+   Glass is justified here because the page really scrolls underneath it. The
+   bar is dense enough that no page text stays legible through it, and it
+   falls back to a solid panel without blur or with reduced transparency. */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  padding: var(--nav-top) var(--gutter) 0;
+  text-align: left;
+  pointer-events: none; /* only the capsule and the menu take pointer input */
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.header.is-hidden {
+  transform: translateY(-140%);
+}
+
+.header-inner.us-container {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  max-width: calc(var(--container) - 2 * var(--gutter));
+  padding-inline: var(--space-3) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--glass-solid);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur-medium) var(--ease),
+              background-color var(--dur-medium) var(--ease),
+              border-color var(--dur-medium) var(--ease);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header-inner.us-container {
+    background: rgba(255, 252, 245, 0.62);
+    -webkit-backdrop-filter: blur(var(--glass-bar-blur)) saturate(170%);
+    backdrop-filter: blur(var(--glass-bar-blur)) saturate(170%);
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                0 1px 2px rgba(21, 23, 28, 0.04);
+  }
+
+  .header.is-scrolled .header-inner.us-container {
+    background: var(--glass-bar-bg);
+    box-shadow: var(--glass-shadow);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .header-inner.us-container,
+  .header.is-scrolled .header-inner.us-container {
+    background: var(--glass-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  height: var(--nav-h);
+}
+
+/* ---- Logo ------------------------------------------------------------- */
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* The mark: a sun rising over a roof line. */
+.logo a::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--ink-900), var(--ink-900)) 0 100% / 100% 36% no-repeat,
+    var(--amber-500);
+  box-shadow: 0 0 0 3px rgba(242, 162, 12, 0.22);
+  transition: transform var(--dur-slow) var(--ease-spring),
+              box-shadow var(--dur-medium) var(--ease);
+}
+
+.logo a:hover::before {
+  transform: rotate(-12deg) scale(1.08);
+  box-shadow: 0 0 0 6px rgba(242, 162, 12, 0.18);
+}
+
+/* ---- Links ------------------------------------------------------------ */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0 auto 0 0;
+  padding: 0;
+}
+
+.nav-links li {
+  position: relative;
+}
+
+.nav-links a {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--glass-text-muted);
+  text-decoration: none;
+  transition: color var(--dur-quick) var(--ease),
+              background-color var(--dur-quick) var(--ease);
+}
+
+.nav-links a:hover {
+  color: var(--text);
+  background: rgba(21, 23, 28, 0.05);
+}
+
+.nav-links a[aria-current] {
+  color: var(--text);
+}
+
+/* The active indicator slides between links (Framer Motion layoutId). */
+.nav-pill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  box-shadow: inset 0 0 0 1px rgba(21, 23, 28, 0.06),
+              0 1px 2px rgba(21, 23, 28, 0.08);
+}
+
+/* ---- Auth ------------------------------------------------------------- */
+
+.auth-section {
+  display: flex;
+  align-items: center;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.login-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color var(--dur-quick) var(--ease);
+}
+
+.login-link:hover {
+  background: rgba(21, 23, 28, 0.05);
+}
+
+.signup-link {
+  min-height: 44px;
+  height: 44px;
+  font-size: 0.9375rem;
+  padding: 0 var(--space-5);
+}
+
+.header .user-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-900);
+  color: var(--ivory-100);
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.header .user-icon:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px rgba(242, 162, 12, 0.35);
+}
+
+/* ---- Hamburger -------------------------------------------------------- */
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  transition: background-color var(--dur-quick) var(--ease),
+              transform var(--dur-fast) var(--ease-spring);
+}
+
+.nav-toggle:hover {
+  background: rgba(21, 23, 28, 0.06);
+}
+
+.nav-toggle:active {
+  transform: scale(0.92);
+}
+
+.nav-toggle svg {
+  animation: nav-icon-in var(--dur-medium) var(--ease-spring) both;
+}
+
+@keyframes nav-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Mobile menu ------------------------------------------------------
+   Always in the DOM (aria-controls points at it); it unfolds from the
+   capsule's top-right corner, where the button that opened it sits. */
+
+.nav-mobile {
+  display: none;
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-panel);
+  background: var(--glass-solid);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav-mobile {
+    background: var(--glass-bg-dense);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    backdrop-filter: blur(24px) saturate(170%);
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), var(--shadow-lg);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .nav-mobile {
+    background: var(--glass-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--border-strong);
+  }
+}
+
+.nav-mobile li {
+  margin: 0;
+}
+
+.nav-mobile a:not(.us-btn) {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color var(--dur-quick) var(--ease);
+}
+
+.nav-mobile a:not(.us-btn):hover,
+.nav-mobile a:not(.us-btn):active {
+  background: rgba(21, 23, 28, 0.06);
+}
+
+.nav-mobile-cta {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--glass-edge);
+}
+
+.nav-mobile-cta .us-btn {
+  width: 100%;
+  min-height: 52px;
+}
+
+@media (max-width: 900px) {
+  .nav {
+    gap: var(--space-3);
+  }
+
+  .nav-links,
+  .auth-section {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .nav-mobile {
+    display: block;
+    pointer-events: none;
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(var(--nav-top) + var(--nav-h));
+    max-height: calc(100vh - var(--nav-top) - var(--nav-h) - 24px);
+    max-height: calc(100dvh - var(--nav-top) - var(--nav-h) - 24px);
+    overflow-y: auto;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+    transform-origin: top right;
+    transition: opacity var(--dur-fast) var(--ease),
+                transform var(--dur-medium) var(--ease),
+                visibility 0s linear var(--dur-medium);
+  }
+
+  .nav-mobile.show {
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition: opacity var(--dur-fast) var(--ease),
+                transform var(--dur-slow) var(--ease-spring),
+                visibility 0s;
+  }
+
+  .nav-mobile li {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--dur-fast) var(--ease),
+                transform var(--dur-medium) var(--ease);
+  }
+
+  .nav-mobile.show li {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nav-mobile.show li:nth-child(1) { transition-delay: 60ms; }
+  .nav-mobile.show li:nth-child(2) { transition-delay: 100ms; }
+  .nav-mobile.show li:nth-child(3) { transition-delay: 140ms; }
+  .nav-mobile.show li:nth-child(4) { transition-delay: 180ms; }
+  .nav-mobile.show li:nth-child(5) { transition-delay: 220ms; }
+}

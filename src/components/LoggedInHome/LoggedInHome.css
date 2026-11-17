@@ -1,0 +1,288 @@
+/* Signed-in home. Calmer than the public page: shorter entrances, the
+   three-step journey as the centrepiece. All classes are prefixed lh-. */
+
+.lh section {
+  padding: 0;
+}
+
+.lh p {
+  margin-bottom: 0;
+}
+
+/* ---- Hero ------------------------------------------------------------- */
+
+.lh-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: center;
+  padding-block: clamp(32px, 5vw, 72px) var(--section-y-tight);
+}
+
+.lh-hero-copy {
+  grid-column: 1 / span 6;
+}
+
+.lh-hero-title {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  max-width: 12ch;
+}
+
+.lh-hero-lead {
+  margin-top: var(--space-5);
+  max-width: 42ch;
+}
+
+.lh-hero-actions {
+  margin-top: var(--space-6);
+}
+
+.lh-hero-figure {
+  grid-column: 8 / span 5;
+}
+
+.lh-hero-image {
+  aspect-ratio: 5 / 4;
+  box-shadow: var(--shadow-lg);
+}
+
+.lh-hero-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Features: four ruled columns -------------------------------------- */
+
+.lh-section-title {
+  margin-bottom: var(--space-7);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+.lh-features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.lh-feature {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-strong);
+}
+
+.lh-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--ivory-200);
+  color: var(--text);
+  transition: background-color var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease-spring);
+}
+
+.lh-feature:hover .lh-feature-icon {
+  background: var(--amber-500);
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.lh-feature .us-h3 {
+  font-size: 1.25rem;
+}
+
+.lh-feature p {
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+/* ---- Journey: three wide rows, each one a link ------------------------- */
+
+.lh-journey-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-5);
+  align-items: end;
+  margin-bottom: var(--space-7);
+}
+
+.lh-journey-head .us-h2 {
+  grid-column: 1 / span 6;
+}
+
+.lh-journey-head .us-lead {
+  grid-column: 8 / span 5;
+}
+
+.lh-journey-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.lh-step {
+  border-top: 1px solid var(--border-strong);
+}
+
+.lh-step-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  margin-inline: calc(-1 * var(--space-5));
+  border-radius: var(--radius-card);
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease);
+}
+
+.lh-step-link:hover {
+  background: var(--surface);
+  transform: translateX(6px);
+}
+
+.lh-step-num {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+
+.lh-step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink-900);
+  color: var(--amber-400);
+  transition: background-color var(--dur-medium) var(--ease),
+              color var(--dur-medium) var(--ease),
+              transform var(--dur-medium) var(--ease-spring);
+}
+
+.lh-step-link:hover .lh-step-icon {
+  background: var(--amber-500);
+  color: var(--ink-900);
+  transform: scale(1.08);
+}
+
+.lh-step-body {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.lh-step-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.lh-step-desc {
+  max-width: 60ch;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.lh-step-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lh-step-cta svg {
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.lh-step-link:hover .lh-step-cta svg {
+  transform: translate(3px, -3px);
+}
+
+/* ---- Closing band ------------------------------------------------------ */
+
+.lh-cta {
+  /* The footer's rounded corners sit on this band. */
+  padding-bottom: var(--radius-panel) !important;
+  margin-bottom: calc(-1 * var(--radius-panel));
+}
+
+.lh-cta-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+
+.lh-cta-lead {
+  margin-top: var(--space-4);
+}
+
+/* ---- Tablet and phone -------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .lh-hero-copy,
+  .lh-hero-figure,
+  .lh-journey-head .us-h2,
+  .lh-journey-head .us-lead {
+    grid-column: 1 / -1;
+  }
+
+  .lh-hero-figure {
+    margin-top: var(--space-7);
+  }
+
+  .lh-hero-image {
+    aspect-ratio: 16 / 9;
+  }
+
+  .lh-journey-head .us-lead {
+    margin-top: var(--space-4);
+  }
+
+  .lh-features-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .lh-features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lh-step-link {
+    grid-template-columns: 56px minmax(0, 1fr);
+    align-items: start;
+    row-gap: var(--space-3);
+    padding-inline: var(--space-3);
+    margin-inline: calc(-1 * var(--space-3));
+  }
+
+  .lh-step-num {
+    grid-column: 1 / -1;
+  }
+
+  .lh-step-cta {
+    grid-column: 2;
+    min-height: 44px;
+  }
+
+  .lh-cta-inner .us-btn {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+}

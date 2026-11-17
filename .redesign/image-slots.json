@@ -1,0 +1,20 @@
+{
+  "slots": [
+    {
+      "id": "roof-satellite",
+      "path": "public/images/roof-satellite.jpg",
+      "width": 1200,
+      "height": 1000,
+      "subject": "A screenshot of the calculator itself: the Google satellite view of a single Indian house, zoomed in close, with the roof outline traced as a blue polygon. Take it from the live app so the roof, the polygon and the surrounding street are real. No browser chrome, no cursor.",
+      "where": "Home, hero, right-hand side. The result panel sits over its bottom-right corner, so keep that corner free of important detail."
+    },
+    {
+      "id": "report-screen",
+      "path": "public/images/report-screen.jpg",
+      "width": 1400,
+      "height": 1050,
+      "subject": "A screenshot of the report page in the app, showing the production-versus-consumption chart and the cost and savings cards. Use a real estimate, not blank fields.",
+      "where": "Home, the section that lists what the report contains."
+    }
+  ]
+}

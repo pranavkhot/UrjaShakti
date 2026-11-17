@@ -1,0 +1,772 @@
+/* Report: investment-grade hierarchy on solid surfaces.
+
+   PDF SAFETY. Everything inside .report-container is captured by
+   html2canvas. Inside it:
+     - no CSS @keyframes (the capture clones the DOM and would restart them
+       from their first, often invisible, frame);
+     - no backdrop-filter, filter or blend modes (not rendered);
+     - colours in hex / rgba only.
+   Hover transitions are fine: they are at rest when the capture runs. */
+
+.report-page {
+  padding-bottom: var(--section-y-tight);
+}
+
+.report-chrome {
+  padding-block: clamp(20px, 3vw, 40px) 0;
+}
+
+.report-hint {
+  max-width: 70ch;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--amber-500);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--ivory-200);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+/* ---- The captured sheet ------------------------------------------------ */
+
+.report-container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: var(--space-3) var(--gutter) var(--space-6);
+  background: #f7f2e8; /* explicit: the PDF takes its page colour from here */
+  color: #15171c;
+  text-align: left;
+}
+
+/* html2canvas draws any text that has letter-spacing one glyph at a time and
+   ignores OpenType features, so tracked or tabular figures came out unevenly
+   spaced in the PDF ("1 01 6.84"). Inside the sheet, text is set plainly and
+   words get a hair more room, which the capture reproduces faithfully.
+   Verified by capturing the sheet before and after. */
+.report-container,
+.report-container * {
+  letter-spacing: 0 !important;
+  font-variant-numeric: normal !important;
+  font-feature-settings: normal !important;
+  text-rendering: auto !important;
+  word-spacing: 0.06em;
+}
+
+.report-content {
+  display: grid;
+  gap: clamp(28px, 3.4vw, 48px);
+}
+
+/* ---- Header and executive summary -------------------------------------- */
+
+.report-header {
+  border-radius: var(--radius-panel);
+  background: #15171c;
+  color: #f7f2e8;
+  padding: clamp(24px, 3.6vw, 48px);
+}
+
+.report-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.report-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 50%;
+  background: #f2a20c;
+  color: #15171c;
+}
+
+.report-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: var(--space-5);
+  margin: clamp(24px, 3.4vw, 48px) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid rgba(247, 242, 232, 0.18);
+}
+
+.report-summary dt {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #b9b6ad;
+}
+
+.report-summary dd {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.report-summary-item--lead dd {
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  color: #f7b733;
+}
+
+/* ---- Sections ---------------------------------------------------------- */
+
+/* The app-wide default gives every <section> 4rem of padding. The sheet sets
+   its own rhythm through the grid gap, and a shorter sheet prints larger. */
+.report-section {
+  padding: 0;
+}
+
+.report-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid #15171c;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: left;
+  color: #15171c;
+}
+
+.report-section-title span {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #8a5300;
+}
+
+.report-card {
+  border-radius: var(--radius-card);
+  background: #fffdf8;
+  border: 1px solid #e2d8c4;
+  padding: var(--space-5);
+}
+
+.report-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.report-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-align: left;
+  color: #15171c;
+}
+
+.report-card-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: #5a5e66;
+}
+
+/* ---- Panel selector ----------------------------------------------------- */
+
+.report-panel-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.report-panel-cards-grid + .report-panel-cards-grid {
+  margin-top: var(--space-3);
+}
+
+.report-recommended-panel-card {
+  position: relative;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  border: 1.5px solid #e2d8c4;
+  background: #f7f2e8;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.report-recommended-panel-card:hover {
+  border-color: #15171c;
+  transform: translateY(-2px);
+}
+
+.report-recommended-panel-card:focus-visible {
+  outline: 3px solid #0f6b66;
+  outline-offset: 3px;
+}
+
+.report-recommended-panel-card:active {
+  transform: scale(0.98);
+}
+
+.report-recommended-panel-card.report-selected-panel {
+  border-color: #f2a20c;
+  background: #fdf0d2;
+  box-shadow: 0 0 0 3px rgba(242, 162, 12, 0.28);
+}
+
+/* The selection mark. */
+.report-recommended-panel-card::before {
+  content: '';
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #cbbea5;
+  background: #fffdf8;
+  transition: border-color var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.report-recommended-panel-card.report-selected-panel::before {
+  border-color: #15171c;
+  background: #15171c;
+  box-shadow: inset 0 0 0 4px #f2a20c;
+}
+
+/* The vendor rating, shown on hover as before. */
+.report-recommended-panel-card::after {
+  content: attr(data-rating);
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: #15171c;
+  color: #f7b733;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+
+.report-recommended-panel-card:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.report-recommended-panel-header {
+  padding-right: var(--space-6);
+}
+
+.report-recommended-panel-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.report-panel-cost {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: #8a5300;
+}
+
+.report-recommended-panel-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid #e2d8c4;
+}
+
+.report-recommended-panel-details p {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: #5a5e66;
+}
+
+/* ---- Energy: chart beside its figures ----------------------------------- */
+
+.report-energy {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.report-legend {
+  display: flex;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--text-sm);
+  color: #5a5e66;
+}
+
+.report-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.report-legend-swatch--production {
+  background: #f2a20c;
+}
+
+.report-legend-swatch--consumption {
+  background: #0f6b66;
+}
+
+.report-tooltip {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: #15171c;
+  box-shadow: var(--shadow-md);
+  text-align: left;
+}
+
+.report-tooltip-label {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: #b9b6ad;
+}
+
+.report-tooltip-item {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: #f7f2e8 !important; /* the series colour is too faint on ink */
+}
+
+/* ---- Metric cards ------------------------------------------------------- */
+
+.report-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.report-metrics-grid--side {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.report-metrics-grid--cost {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.report-metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: #fffdf8;
+  border: 1px solid #e2d8c4;
+  transition: border-color var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+
+.report-metric-card:hover {
+  border-color: #cbbea5;
+  transform: translateY(-2px);
+}
+
+/* The explanation of each card, on hover as before. */
+.report-metric-card::after {
+  content: attr(data-description);
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: calc(100% - 8px);
+  z-index: 5;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  background: #15171c;
+  color: #f7f2e8;
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+
+.report-metric-card:hover::after {
+  opacity: 1;
+  transform: none;
+}
+
+.report-metric-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.3;
+  color: #5a5e66;
+}
+
+.report-metric-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.report-blue-icon {
+  color: #8a5300;
+}
+
+.report-green-icon {
+  color: #0f6b66;
+}
+
+.report-metric-content {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.report-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-metric-item + .report-metric-item {
+  padding-top: var(--space-3);
+  border-top: 1px solid #efe8d9;
+}
+
+.report-metric-label {
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: #5a5e66;
+}
+
+.report-metric-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: #15171c;
+  overflow-wrap: anywhere;
+}
+
+/* The figure the whole cost section resolves to. */
+.report-metrics-grid--cost .report-metric-card:last-child {
+  background: #15171c;
+  border-color: #15171c;
+}
+
+.report-metrics-grid--cost .report-metric-card:last-child .report-metric-title,
+.report-metrics-grid--cost .report-metric-card:last-child .report-metric-label {
+  color: #b9b6ad;
+}
+
+.report-metrics-grid--cost .report-metric-card:last-child .report-metric-value {
+  color: #f7b733;
+}
+
+.report-metrics-grid--cost .report-metric-card:last-child .report-metric-icon {
+  color: #f7b733;
+}
+
+/* ---- Policy: long text reads as prose ------------------------------------ */
+
+.report-policy-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-4);
+}
+
+.report-policy-card .report-metric-value {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+/* ---- Carbon ------------------------------------------------------------- */
+
+.report-carbon-card {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #0b5450;
+  border-color: #0b5450;
+  color: #f7f2e8;
+}
+
+.report-carbon-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.report-carbon-icon {
+  width: 18px;
+  height: 18px;
+  color: #6fd3c7;
+}
+
+.report-carbon-card-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #cfe6e3;
+}
+
+.report-carbon-card-content {
+  margin-top: var(--space-4);
+}
+
+.report-carbon-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.report-carbon-text {
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.report-carbon-percentage {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #cfe6e3;
+}
+
+.report-carbon-progress {
+  height: 10px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgba(247, 242, 232, 0.18);
+  overflow: hidden;
+}
+
+.report-carbon-progress-bar {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: #f7b733;
+  transition: width var(--dur-reveal) var(--ease);
+}
+
+/* ---- Footnote and actions ------------------------------------------------ */
+
+.report-footnote {
+  margin: 0;
+  max-width: 80ch;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: #5a5e66;
+}
+
+.report-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: 1px solid #cbbea5;
+}
+
+.report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--dur-quick) var(--ease),
+              border-color var(--dur-quick) var(--ease),
+              transform var(--dur-fast) var(--ease-spring),
+              box-shadow var(--dur-fast) var(--ease);
+}
+
+.report-button:hover {
+  transform: translateY(-2px);
+}
+
+.report-button:active {
+  transform: scale(0.97);
+}
+
+.report-button-sm {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.report-button-md {
+  min-height: 48px;
+  padding: 0 var(--space-5);
+  font-size: 1rem;
+}
+
+.report-button-lg {
+  min-height: 56px;
+  padding: 0 var(--space-6);
+  font-size: 1.0625rem;
+}
+
+.report-button-default {
+  background: #f2a20c;
+  color: #15171c;
+}
+
+.report-button-default:hover {
+  background: #f7b733;
+  box-shadow: 0 10px 24px rgba(217, 139, 0, 0.32);
+}
+
+.report-button-outline {
+  background: transparent;
+  border-color: #15171c;
+  color: #15171c;
+}
+
+.report-button-outline:hover {
+  background: #15171c;
+  color: #f7f2e8;
+}
+
+.report-button-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.report-explore-button:hover .report-button-icon {
+  transform: translateX(3px);
+}
+
+.report-download-button:hover .report-button-icon {
+  transform: translateY(2px);
+}
+
+/* ---- Loading and error states (outside the captured sheet) --------------- */
+
+.report-state {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: clamp(24px, 4vw, 56px) var(--section-y-tight);
+}
+
+.report-state-title {
+  display: block;
+  width: min(480px, 80%);
+  height: 56px;
+}
+
+.report-state-panel {
+  display: block;
+  height: 420px;
+  border-radius: var(--radius-panel);
+}
+
+/* ---- Tablet and phone ---------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .report-energy {
+    grid-template-columns: 1fr;
+  }
+
+  .report-metrics-grid,
+  .report-metrics-grid--cost {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .report-metrics-grid--side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .report-policy-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .report-panel-cards-grid,
+  .report-metrics-grid,
+  .report-metrics-grid--cost,
+  .report-metrics-grid--side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-card,
+  .report-metric-card {
+    padding: var(--space-4);
+  }
+
+  .report-metric-value {
+    font-size: 1.0625rem;
+  }
+
+  .report-action-buttons .report-button {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 460px) {
+  .report-panel-cards-grid,
+  .report-metrics-grid,
+  .report-metrics-grid--cost,
+  .report-metrics-grid--side,
+  .report-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .report-carbon-card {
+    grid-column: auto;
+  }
+}

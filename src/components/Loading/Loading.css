@@ -1,0 +1,72 @@
+/* Loading. Shown only while something is genuinely loading: a lazy route,
+   or the auth check in ProtectedRoute (which renders .loading-container with
+   a plain paragraph). */
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-5);
+  min-height: 70vh;
+  padding: var(--space-8) var(--gutter);
+  color: var(--text-muted);
+}
+
+.loading-container p {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  animation: loading-breathe 1.6s var(--ease-out) infinite alternate;
+}
+
+/* The sun: a still disc, rays turning slowly round it. */
+.sun-spinner {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.sun-spinner .sun-rays {
+  width: 100%;
+  height: 100%;
+  color: var(--amber-500);
+  animation: loading-spin 6s linear infinite;
+}
+
+.sun-spinner .sun-core {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--amber-500);
+  box-shadow: 0 0 0 6px rgba(242, 162, 12, 0.18);
+  animation: loading-pulse 1.6s var(--ease-out) infinite alternate;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-pulse {
+  from {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 2px rgba(242, 162, 12, 0.28);
+  }
+  to {
+    transform: scale(1);
+    box-shadow: 0 0 0 12px rgba(242, 162, 12, 0);
+  }
+}
+
+@keyframes loading-breathe {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}

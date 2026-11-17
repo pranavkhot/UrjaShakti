@@ -1,0 +1,17 @@
+{
+  "label": "after",
+  "base": "http://localhost:3000",
+  "routes": {
+    "/": {
+      "errors": [],
+      "shots": {
+        "1440": "home@1440.jpg",
+        "390": "home@390.jpg"
+      },
+      "top": {
+        "1440": "home@1440-top.jpg",
+        "390": "home@390-top.jpg"
+      }
+    }
+  }
+}
