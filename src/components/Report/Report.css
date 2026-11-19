@@ -595,6 +595,32 @@
   transition: width var(--dur-reveal) var(--ease);
 }
 
+.report-carbon-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1, 4px);
+  font-size: var(--text-xs);
+  color: #cfe6e3;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.report-carbon-note {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: #cfe6e3;
+}
+
+/* Small qualifier under a headline figure (e.g. the subsidy behind payback). */
+.report-summary-note {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #b9b6ad;
+}
+
 /* ---- Footnote and actions ------------------------------------------------ */
 
 .report-footnote {

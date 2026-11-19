@@ -42,6 +42,8 @@ import { AuthContext } from '../../AuthContext';
 // Import useNavigate from react-router-dom for navigation
 import { useNavigate } from 'react-router-dom';
 
+import { PERFORMANCE_RATIO } from '../../utils/solarCalculations';
+
 // Define the Google Maps API key and libraries
 const googleMapsApiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 
@@ -179,16 +181,30 @@ const Calculator: React.FC = () => {
       const response = await fetch(apiUrl);
       const data = await response.json();
 
-      // Extract monthly irradiance data
+      // NASA POWER climatology returns JAN..DEC plus an "ANN" (annual mean)
+      // entry. Use ANN directly; averaging all 13 keys counted the annual
+      // value as a 13th month. Fall back to a day-weighted mean of the 12
+      // months, skipping NASA's -999 fill values.
       const monthlyData = data.properties.parameter.ALLSKY_SFC_SW_DWN;
-      let totalIrradiance = 0;
-      let months = 0;
-      for (let month in monthlyData) {
-        totalIrradiance += monthlyData[month];
-        months++;
+      const annual = Number(monthlyData?.ANN);
+      if (isFinite(annual) && annual > 0) {
+        return annual; // Units: kWh/m²/day
       }
-      const averageIrradiance = totalIrradiance / months;
-      return averageIrradiance; // Units: kWh/m²/day
+      const MONTHS: Array<[string, number]> = [
+        ['JAN', 31], ['FEB', 28.25], ['MAR', 31], ['APR', 30],
+        ['MAY', 31], ['JUN', 30], ['JUL', 31], ['AUG', 31],
+        ['SEP', 30], ['OCT', 31], ['NOV', 30], ['DEC', 31],
+      ];
+      let weighted = 0;
+      let days = 0;
+      for (const [month, monthDays] of MONTHS) {
+        const value = Number(monthlyData?.[month]);
+        if (isFinite(value) && value >= 0) {
+          weighted += value * monthDays;
+          days += monthDays;
+        }
+      }
+      return days > 0 ? weighted / days : 0; // Units: kWh/m²/day
     } catch (error) {
       console.error('Error fetching irradiance data:', error);
       return 0;
@@ -219,8 +235,10 @@ const Calculator: React.FC = () => {
         (totalPanelArea * panelEfficiency * standardIrradiance) / 1000; // Convert W to kW
       setCapacityResult(systemCapacityKW);
 
-      // Calculate daily energy production in kWh/day
-      const dailyEnergyProduction = systemCapacityKW * irradiance;
+      // Daily energy for a whole-roof system in kWh/day, after the same
+      // system losses (performance ratio) the report uses.
+      const dailyEnergyProduction =
+        systemCapacityKW * irradiance * PERFORMANCE_RATIO;
       setDailyEnergyResult(dailyEnergyProduction);
 
       // Calculate optimal tilt angle
@@ -748,7 +766,7 @@ const saveLocationToFirebase = useCallback(
             {/* System Capacity */}
             <StaggerItem className="calc-row">
               <CapacityIcon className="calc-row-icon" aria-hidden="true" />
-              <h3 className="calc-row-title">System Capacity</h3>
+              <h3 className="calc-row-title">Roof Potential (max)</h3>
               <p id="capacity-result" key={capacityResult} className="calc-value us-nums">
                 {capacityResult.toFixed(2)} kW
               </p>
@@ -757,7 +775,7 @@ const saveLocationToFirebase = useCallback(
             <StaggerItem className="calc-row">
               <EnergyIcon className="calc-row-icon" aria-hidden="true" />
               <h3 className="calc-row-title">
-                Daily Energy Production
+                Daily Energy (whole roof)
               </h3>
               <p id="daily-energy-result" key={dailyEnergyResult} className="calc-value us-nums">
                 {dailyEnergyResult.toFixed(2)} kWh/day
@@ -790,8 +808,10 @@ const saveLocationToFirebase = useCallback(
 
           <p className="us-help calc-method">
             Irradiance is the long-term average from NASA POWER at the centre
-            of your outline. Capacity assumes 80% of the roof is usable and
-            18% panel efficiency. Shade is not modelled.
+            of your outline. Roof potential is the most the whole roof could
+            hold: 80% of the roof usable at 18% panel efficiency. Your report
+            sizes the system to your bill, usually far smaller. Shade is not
+            modelled.
           </p>
 
           {/* Next step */}

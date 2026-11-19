@@ -34,6 +34,7 @@ import {
   indianTariffRates,
   IndianTariffRate,
 } from "../../data/indianTariffRates";
+import { deriveConsumption } from "../../utils/solarCalculations";
 import {
   getNearestIndianState,
   isUserInIndia,
@@ -51,7 +52,21 @@ const formSchema = z.object({
     .string()
     .min(1, "Number of occupants is required")
     .regex(/^\d+$/, "Number of occupants must be a number"),
-});
+  // Optional: the units (kWh) printed on the bill. When given, consumption is
+  // taken from it instead of being estimated from the rupee amount.
+  billUnits: z
+    .string()
+    .regex(/^(\d+(\.\d{1,2})?)?$/, "Units must be a valid number")
+    .optional(),
+  // Optional: fixed / meter charges that stay payable after solar.
+  fixedCharges: z
+    .string()
+    .regex(/^(\d+(\.\d{1,2})?)?$/, "Fixed charges must be a valid number")
+    .optional(),
+}).refine(
+  (d) => !d.fixedCharges || Number(d.fixedCharges) < Number(d.monthlyBill),
+  { message: "Fixed charges must be less than the monthly bill", path: ["fixedCharges"] }
+);
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -59,8 +74,11 @@ interface ConsumptionData {
   monthlyBill: number;
   occupants: number;
   area: number; // in square meters
-  consumptionFromBill: number; // in kWh/month
+  consumptionFromBill: number; // in kWh/month (unrounded)
   tariffRate: number; // always store in INR per kWh
+  billUnits: number | null; // kWh/month printed on the bill, if entered
+  fixedCharges: number; // ₹/month that stay payable after solar
+  consumptionSource: "bill-units" | "estimated-from-bill";
   timestamp: any;
 }
 
@@ -93,6 +111,8 @@ const ConsumptionCalculator: React.FC = () => {
     defaultValues: {
       monthlyBill: "",
       occupants: "",
+      billUnits: "",
+      fixedCharges: "",
     },
   });
 
@@ -288,14 +308,28 @@ const ConsumptionCalculator: React.FC = () => {
 
   const watchedMonthlyBill = watch("monthlyBill");
   const watchedOccupants = watch("occupants");
+  const watchedBillUnits = watch("billUnits");
+  const watchedFixedCharges = watch("fixedCharges");
 
-  // consumptionFromBill = monthlyBill (in INR) / tariffRate (in INR/kWh)
-  const consumptionFromBill = useMemo(() => {
-    if (tariffRate === null) return 0;
+  // Consumption: the units printed on the bill when given; otherwise
+  // (monthly bill - fixed charges) / state tariff. Kept unrounded so later
+  // figures do not inherit rounding error; rounded only for display.
+  const consumption = useMemo(() => {
     const bill = Number(watchedMonthlyBill);
-    if (isNaN(bill) || bill <= 0) return 0;
-    return parseFloat((bill / tariffRate).toFixed(2));
-  }, [watchedMonthlyBill, tariffRate]);
+    if (isNaN(bill) || bill <= 0) {
+      return { monthlyUnits: 0, source: "estimated-from-bill" as const, energyRate: 0 };
+    }
+    const units = Number(watchedBillUnits);
+    const fixed = Number(watchedFixedCharges);
+    return deriveConsumption({
+      monthlyBill: bill,
+      fixedCharges: isNaN(fixed) ? 0 : fixed,
+      billUnits: isNaN(units) ? null : units,
+      tariffRate,
+    });
+  }, [watchedMonthlyBill, watchedBillUnits, watchedFixedCharges, tariffRate]);
+  const consumptionFromBill = consumption.monthlyUnits;
+  const hasBillUnits = consumption.source === "bill-units";
 
   useEffect(() => {
     // First fetch exchange rate
@@ -313,8 +347,14 @@ const ConsumptionCalculator: React.FC = () => {
   }, [fetchArea, fetchLatestLocation, userId, exchangeRate]);
 
   const onSubmit = async (data: FormData) => {
-    if (area === null || tariffRate === null) {
+    // The state tariff is only needed when consumption has to be estimated
+    // from the rupee amount; units from the bill make it unnecessary.
+    if (area === null || (tariffRate === null && !hasBillUnits)) {
       setSubmissionError("Area or electricity tariff rate is not available.");
+      return;
+    }
+    if (!(consumptionFromBill > 0)) {
+      setSubmissionError("Could not work out your consumption from the bill.");
       return;
     }
 
@@ -333,7 +373,11 @@ const ConsumptionCalculator: React.FC = () => {
         occupants: Number(data.occupants),
         area: area,
         consumptionFromBill: consumptionFromBill,
-        tariffRate: tariffRate, // already in INR/kWh
+        // State tariff (INR/kWh); the bill's own rate when no tariff was found.
+        tariffRate: tariffRate ?? consumption.energyRate,
+        billUnits: hasBillUnits ? Number(data.billUnits) : null,
+        fixedCharges: data.fixedCharges ? Number(data.fixedCharges) : 0,
+        consumptionSource: consumption.source,
         timestamp: serverTimestamp(),
       };
 
@@ -402,9 +446,10 @@ const ConsumptionCalculator: React.FC = () => {
               />
             </div>
             <Reveal as="p" className="us-lead est-lead" inView={false} delay={0.2}>
-              Estimate your electricity consumption. Your monthly bill is
-              divided by the average domestic tariff for your state to give
-              the units you use.
+              Estimate your electricity consumption. Enter the units printed on
+              your bill for the most accurate figure; otherwise your bill,
+              less any fixed charges, is divided by the average domestic
+              tariff for your state.
             </Reveal>
           </header>
 
@@ -461,6 +506,62 @@ const ConsumptionCalculator: React.FC = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Units on the bill (optional) */}
+                <div className="us-field est-field">
+                  <label htmlFor="billUnits">
+                    Units on Your Bill (kWh/month) &middot; optional
+                  </label>
+                  <input
+                    id="billUnits"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="e.g. units consumed this month"
+                    {...register("billUnits")}
+                    className={`us-input ${errors.billUnits ? "est-input-error" : ""}`}
+                    aria-invalid={errors.billUnits ? true : undefined}
+                    aria-describedby={errors.billUnits ? "billUnits-error" : "billUnits-help"}
+                  />
+                  {errors.billUnits ? (
+                    <p id="billUnits-error" className="us-error" role="alert">
+                      {errors.billUnits.message}
+                    </p>
+                  ) : (
+                    <p id="billUnits-help" className="us-help">
+                      The &ldquo;units consumed&rdquo; on the same bill. More accurate
+                      than estimating from the amount, which slab rates can skew.
+                    </p>
+                  )}
+                </div>
+
+                {/* Fixed charges (optional) */}
+                <div className="us-field est-field">
+                  <label htmlFor="fixedCharges">
+                    Fixed Charges on Your Bill (₹/month) &middot; optional
+                  </label>
+                  <input
+                    id="fixedCharges"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="e.g. fixed / meter / demand charges"
+                    {...register("fixedCharges")}
+                    className={`us-input ${errors.fixedCharges ? "est-input-error" : ""}`}
+                    aria-invalid={errors.fixedCharges ? true : undefined}
+                    aria-describedby={errors.fixedCharges ? "fixedCharges-error" : "fixedCharges-help"}
+                  />
+                  {errors.fixedCharges ? (
+                    <p id="fixedCharges-error" className="us-error" role="alert">
+                      {errors.fixedCharges.message}
+                    </p>
+                  ) : (
+                    <p id="fixedCharges-help" className="us-help">
+                      Charges you pay whatever you use. They stay on the bill after
+                      solar, so they are not counted as savings.
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Tariff Loading/Error */}
@@ -481,7 +582,7 @@ const ConsumptionCalculator: React.FC = () => {
               <button
                 type="submit"
                 className={`us-btn us-btn--primary us-btn--lg est-submit ${success ? "est-submit--success" : ""}`}
-                disabled={loading || tariffLoading || area === null}
+                disabled={loading || (tariffLoading && !hasBillUnits) || area === null}
               >
                 {loading ? (
                   <>
@@ -529,8 +630,12 @@ const ConsumptionCalculator: React.FC = () => {
             <StaggerItem>
               <InfoCard
                 title="Consumption from Bill"
-                value={`${consumptionFromBill} kWh/month`}
-                description="Derived from your monthly bill"
+                value={`${consumptionFromBill.toFixed(2)} kWh/month`}
+                description={
+                  hasBillUnits
+                    ? "Units printed on your bill"
+                    : "Estimated: (bill − fixed charges) ÷ tariff"
+                }
                 IconComponent={Lightbulb}
               />
             </StaggerItem>

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   Download,
@@ -43,6 +43,20 @@ import html2canvas from "html2canvas";
 // Policy & fact related imports
 import axios from "axios";
 import { solarPolicySummaries } from "../../data/solarPolicySummaries";
+import {
+  calculateReport,
+  ReportResult,
+  LIFETIME_YEARS,
+  PANEL_UNIT_WATTS,
+  GST_RATE,
+  CO2_KG_PER_KWH,
+  PANEL_DEGRADATION_PER_YEAR,
+  TARIFF_ESCALATION_PER_YEAR,
+  EXPORT_CREDIT_RATE,
+  DEFAULT_DOWN_PAYMENT_PERCENT,
+  DEFAULT_INTEREST_RATE,
+  DEFAULT_LOAN_TENURE_YEARS,
+} from "../../utils/solarCalculations";
 
 // Firebase imports
 import { auth, db } from "../../firebase";
@@ -164,17 +178,14 @@ const formatINR = (value: number): string =>
     maximumFractionDigits: 2,
   });
 
-function getOrientationFromAzimuth(azimuth: number): string {
-  if ((azimuth >= 315 && azimuth <= 360) || (azimuth >= 0 && azimuth < 45)) {
-    return "North";
-  } else if (azimuth >= 45 && azimuth < 135) {
-    return "East";
-  } else if (azimuth >= 135 && azimuth < 225) {
-    return "South";
-  } else if (azimuth >= 225 && azimuth < 315) {
-    return "West";
+/* Fixed panels produce most over a year when they face the equator: south in
+   the northern hemisphere, north in the southern. (The sun's position at the
+   moment the roof was traced says nothing about this.) */
+function getOptimalOrientation(latitude: number | null | undefined): string {
+  if (latitude === null || latitude === undefined || isNaN(latitude)) {
+    return "Facing the equator";
   }
-  return "Unknown";
+  return latitude >= 0 ? "South" : "North";
 }
 
 interface MetricCardProps {
@@ -212,37 +223,52 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, icon, metrics, dataDescr
 };
 
 interface CarbonFootprintReductionProps {
-  reduction: number; // in tons
+  reduction: number; // tonnes CO₂ avoided per year
+  usageCoveredShare: number; // 0..1, share of the household's usage covered by solar
+  co2KgPerKwh: number;
 }
 
 const CarbonFootprintReduction: React.FC<CarbonFootprintReductionProps> = ({
   reduction,
+  usageCoveredShare,
+  co2KgPerKwh,
 }) => {
   // Never let it go negative
   const safeReduction = Math.max(reduction, 0);
 
-  // Make the max a bit bigger than the current value,
-  // rounded up to the next 5 tons (min 5)
+  // Bar scale: 0 to the next whole 5 tonnes above the value (min 5). The
+  // scale is printed under the bar, so the fill reads as tonnes, not as a
+  // percentage of anything.
   const maxReduction = Math.max(5, Math.ceil(safeReduction / 5) * 5);
-
-  const percentage = (safeReduction / maxReduction) * 100;
+  const fill = Math.min((safeReduction / maxReduction) * 100, 100);
+  const coveredPercent = Math.min(Math.max(usageCoveredShare, 0), 1) * 100;
 
   return (
     <div className="report-carbon-reduction">
       <div className="report-carbon-header">
         <span className="report-carbon-text">
-          {safeReduction.toFixed(2)} tons CO₂/year
+          {safeReduction.toFixed(2)} tonnes CO₂/year
         </span>
-        <span className="report-carbon-percentage">
-          {percentage.toFixed(0)}%
-        </span>
+        <span className="report-carbon-percentage">avoided</span>
       </div>
-      <div className="report-carbon-progress">
+      <div
+        className="report-carbon-progress"
+        role="img"
+        aria-label={`${safeReduction.toFixed(2)} of ${maxReduction} tonnes on the scale`}
+      >
         <div
           className="report-carbon-progress-bar"
-          style={{ width: `${Math.min(percentage, 100)}%` }}
+          style={{ width: `${fill}%` }}
         ></div>
       </div>
+      <div className="report-carbon-scale" aria-hidden="true">
+        <span>0 t</span>
+        <span>{maxReduction} t</span>
+      </div>
+      <p className="report-carbon-note">
+        From the {coveredPercent.toFixed(0)}% of your estimated electricity use
+        that solar covers, at {co2KgPerKwh} kg CO₂ per grid unit.
+      </p>
     </div>
   );
 };
@@ -293,9 +319,12 @@ const Card: React.FC<CardProps> = ({ children, className = "", ...props }) => {
 interface ConsumptionData {
   monthlyBill: number;
   occupants: number;
-  area: number; 
-  consumptionFromBill: number; 
-  tariffRate: number; 
+  area: number;
+  consumptionFromBill: number; // kWh/month
+  tariffRate: number;
+  fixedCharges?: number; // ₹/month, absent on older records
+  billUnits?: number | null; // kWh/month from the bill, absent on older records
+  consumptionSource?: "bill-units" | "estimated-from-bill";
   timestamp: any;
 }
 
@@ -332,45 +361,8 @@ const Report: React.FC = () => {
     useState<ConsumptionData | null>(null);
   const [solarData, setSolarData] = useState<SolarData | null>(null);
 
-  const [usableRoofSpace, setUsableRoofSpace] = useState<number>(0);
-  const [yearlyUsage, setYearlyUsage] = useState<number>(0);
-  const [annualProductionValue, setAnnualProductionValue] = useState<number>(0);
-  const [requiredSystemSize, setRequiredSystemSize] = useState<number>(0);
-  const [annualSavings, setAnnualSavings] = useState<number>(0);
-  const [totalSavings, setTotalSavings] = useState<number>(0);
-  const [roofAreaRequired, setRoofAreaRequired] = useState<number>(0);
-  const [co2Reduction, setCo2Reduction] = useState<number>(0);
-  const [energyChartData, setEnergyChartData] = useState<any[]>([]);
-  const [numberOfUnits500W, setNumberOfUnits500W] = useState<number>(0);
-
-  // Cost variables
-  const [totalSystemCost, setTotalSystemCost] = useState<number>(0);  // Base panel cost (no GST)
-  const [gstAmount, setGstAmount] = useState<number>(0);
-  const [totalCostWithGST, setTotalCostWithGST] = useState<number>(0);
-  const [subsidy, setSubsidy] = useState<number>(0);
-  const [costAfterSubsidy, setCostAfterSubsidy] = useState<number>(0);
-  const [paybackPeriod, setPaybackPeriod] = useState<number>(0);
-
-  // Loan / EMI variables (derived from Firebase-backed values)
-  const [loanAmount, setLoanAmount] = useState<number>(0);
-  const [monthlyEmi, setMonthlyEmi] = useState<number>(0);
-  const [totalInterest, setTotalInterest] = useState<number>(0);
-  const [totalPayment, setTotalPayment] = useState<number>(0);
-  const [postSolarBill, setPostSolarBill] = useState<number>(0);
-  const [monthlyCostWithoutSolar, setMonthlyCostWithoutSolar] = useState<number>(0);
-  const [monthlyCostWithSolarAndEmi, setMonthlyCostWithSolarAndEmi] = useState<number>(0);
-  const [netMonthlySavingsWithLoan, setNetMonthlySavingsWithLoan] = useState<number>(0);
-
-  const LIFETIME_YEARS = 25;
-  const COVERAGE_RATIO = 0.8;
-  const CO2_EMISSIONS_PER_KWH = 0.92;
-  const GST_RATE = 0.12; // 12% GST
-
-  // Default loan assumptions (used for EMI calculation)
-  const DEFAULT_DOWN_PAYMENT_PERCENT = 20; // % of cost-after-subsidy
-  const DEFAULT_INTEREST_RATE = 8.5; // % per year
-  const DEFAULT_LOAN_TENURE_YEARS = 10; // years
-
+  // Figures are no longer kept in separate state: they are derived in one
+  // pass below (useMemo), so the page can never show stale numbers.
   // First Vendor (Victor Solar)
   const panelOptionsVictor: PanelType[] = [
     {
@@ -477,78 +469,83 @@ const Report: React.FC = () => {
     fetchDBData();
   }, [userId]);
 
-  // Helper: calculate loan + EMI + post-solar bill using Firebase-backed values
-  const calculateLoanAndBill = (
-    finalCost: number,
-    annualSavingsCalc: number,
-    monthlyBillAmount: number
-  ) => {
-    if (!consumptionData) {
-      return;
-    }
+  // Every figure on the report, derived in one pass from the saved roof,
+  // the saved bill and the chosen panel (see utils/solarCalculations.ts).
+  const report: ReportResult | null = useMemo(() => {
+    if (!consumptionData || !solarData || !selectedPanel) return null;
 
-    setMonthlyCostWithoutSolar(monthlyBillAmount);
+    const monthlyBill = Number(consumptionData.monthlyBill) || 0;
+    const fixedCharges = Number(consumptionData.fixedCharges) || 0;
+    const monthlyUnits = Number(consumptionData.consumptionFromBill) || 0;
+    // Rate the user pays per unit of energy: energy part of the bill divided
+    // by the units it bought. Falls back to the saved tariff for old records.
+    const energyRate =
+      monthlyBill > fixedCharges && monthlyUnits > 0
+        ? (monthlyBill - fixedCharges) / monthlyUnits
+        : Number(consumptionData.tariffRate) || 0;
 
-    if (finalCost <= 0) {
-      // No system cost -> nothing financed
-      setLoanAmount(0);
-      setMonthlyEmi(0);
-      setTotalInterest(0);
-      setTotalPayment(0);
-      setPostSolarBill(monthlyBillAmount);
-      setMonthlyCostWithSolarAndEmi(monthlyBillAmount);
-      setNetMonthlySavingsWithLoan(0);
-      return;
-    }
-
-    // Down payment and principal
-    const downPaymentAmount =
-      (DEFAULT_DOWN_PAYMENT_PERCENT / 100) * finalCost;
-    const principal = Math.max(finalCost - downPaymentAmount, 0);
-
-    const r = DEFAULT_INTEREST_RATE / 12 / 100; // monthly rate
-    const n = DEFAULT_LOAN_TENURE_YEARS * 12; // number of EMIs
-
-    let emiValue = 0;
-    let totalPay = 0;
-    let totalInt = 0;
-
-    if (principal > 0 && r > 0 && n > 0) {
-      const pow = Math.pow(1 + r, n);
-      emiValue = (principal * r * pow) / (pow - 1);
-      totalPay = emiValue * n;
-      totalInt = totalPay - principal;
-    }
-
-    // Post-solar electricity bill (approx) using yearly savings
-    const monthlySavingsFromSolar = annualSavingsCalc / 12;
-    const newBill = Math.max(monthlyBillAmount - monthlySavingsFromSolar, 0);
-
-    const monthlyCostWithLoan = newBill + emiValue;
-    const netSavings = monthlyBillAmount - monthlyCostWithLoan;
-
-    setLoanAmount(principal);
-    setMonthlyEmi(emiValue);
-    setTotalPayment(totalPay);
-    setTotalInterest(totalInt);
-    setPostSolarBill(newBill);
-    setMonthlyCostWithSolarAndEmi(monthlyCostWithLoan);
-    setNetMonthlySavingsWithLoan(netSavings);
-  };
-
-  useEffect(() => {
-    if (consumptionData && solarData) {
-      const monthlyUsage = consumptionData.consumptionFromBill;
-      const yearlyUsageCalc = monthlyUsage * 12;
-      setYearlyUsage(yearlyUsageCalc);
-
-      const totalRoofSpace = solarData.area;
-      const usableRoof = totalRoofSpace * COVERAGE_RATIO;
-      setUsableRoofSpace(usableRoof);
-
-      calculateAllMetrics(yearlyUsageCalc);
-    }
+    return calculateReport({
+      monthlyUnits,
+      monthlyBill,
+      fixedCharges,
+      energyRate,
+      irradiance: Number(solarData.irradiance) || 0,
+      totalRoofArea: Number(solarData.area) || 0,
+      roofPotentialKW: Number(solarData.capacity) || 0,
+      panel: selectedPanel,
+    });
   }, [consumptionData, solarData, selectedPanel]);
+
+  // Display values (zero until a saved roof and bill are found)
+  const yearlyUsage = report?.yearlyUsage ?? 0;
+  const monthlyUsage = yearlyUsage / 12;
+  const annualProductionValue = report?.annualProduction ?? 0;
+  const surplusUnits = report?.surplusUnits ?? 0;
+  const usableRoofSpace = report?.usableRoofSpace ?? 0;
+  const roofPotentialKW = report?.roofPotentialKW ?? 0;
+  const targetSystemKW = report?.targetSystemKW ?? 0;
+  const selectedSystemKW = report?.selectedSystemKW ?? 0;
+  const numberOfUnits500W = report?.numberOfUnits ?? 0;
+  const limitedByRoof = report?.limitedByRoof ?? false;
+  const roofAreaRequired = report?.roofAreaRequired ?? 0;
+  const annualSavings = report?.annualSavings ?? 0;
+  const totalSavings = report?.lifetimeSavings ?? 0;
+  const annualExportCredit = report?.annualExportCredit ?? 0;
+  const co2Reduction = report?.co2ReductionTons ?? 0;
+  const usageCoveredShare = report?.usageCoveredShare ?? 0;
+  const totalSystemCost = report?.baseCost ?? 0;
+  const gstAmount = report?.gstAmount ?? 0;
+  const totalCostWithGST = report?.costWithGST ?? 0;
+  const subsidy = report?.subsidy ?? 0;
+  const costAfterSubsidy = report?.costAfterSubsidy ?? 0;
+  const paybackPeriod = report ? report.paybackYears : 0;
+  const loanAmount = report?.loanAmount ?? 0;
+  const monthlyEmi = report?.monthlyEmi ?? 0;
+  const totalInterest = report?.totalInterest ?? 0;
+  const postSolarBill = report?.monthlyBillAfter ?? 0;
+  const monthlyCostWithoutSolar = report ? Number(consumptionData?.monthlyBill) || 0 : 0;
+  const fixedChargesMonthly = Number(consumptionData?.fixedCharges) || 0;
+  const monthlyCostWithSolarAndEmi = report?.monthlyCostWithSolarAndEmi ?? 0;
+  const netMonthlySavingsWithLoan = report?.netMonthlySavingsWithLoan ?? 0;
+  const consumptionFromUnits = consumptionData?.consumptionSource === "bill-units";
+
+  const energyChartData = report
+    ? [
+        {
+          name: "Annual",
+          production: parseFloat(annualProductionValue.toFixed(2)),
+          consumption: parseFloat(yearlyUsage.toFixed(2)),
+        },
+      ]
+    : [];
+
+  const formatPayback = (years: number): string => {
+    if (!report) return "0.00 years";
+    if (isFinite(years)) return `${years.toFixed(2)} years`;
+    return annualSavings > 0 ? `More than ${LIFETIME_YEARS} years` : "N/A";
+  };
+  const formatKW = (kw: number) => `${kw.toFixed(2)} kW`;
+  const selectedSystemLabel = `${formatKW(selectedSystemKW)} (${numberOfUnits500W} × ${PANEL_UNIT_WATTS} W)`;
 
   useEffect(() => {
     const fetchPolicyRegion = async () => {
@@ -565,98 +562,6 @@ const Report: React.FC = () => {
     };
     fetchPolicyRegion();
   }, [userLocation, solarData]);
-
-  const calculateAllMetrics = (yearlyConsumption: number) => {
-    if (!solarData || !selectedPanel || !consumptionData) return;
-    const tariffRate = consumptionData.tariffRate;
-    const I = solarData.irradiance;
-
-    // Calculation Factors
-    const baseFactorForMono = 0.8946;
-    const efficiencyRatio = selectedPanel.efficiency / 20;
-    const panelFactor = baseFactorForMono * efficiencyRatio;
-
-    // Required system size (kW)
-    const requiredSystemSizeCalc = yearlyConsumption / (I * 365 * panelFactor);
-    setRequiredSystemSize(requiredSystemSizeCalc);
-
-    // Number of 500W units needed
-    const unitsNeeded = Math.ceil((requiredSystemSizeCalc * 1000) / 500);
-    setNumberOfUnits500W(unitsNeeded);
-
-    // Actual system size (kW)
-    const actualSystemSize = (unitsNeeded * 500) / 1000; 
-    // Annual production (kWh/year)
-    const annualProduction = actualSystemSize * I * 365 * panelFactor;
-    setAnnualProductionValue(annualProduction);
-
-    // Offset consumption by production
-    const offset = Math.min(annualProduction, yearlyConsumption);
-
-    // Annual and total savings
-    const annualSavingsCalc = offset * tariffRate;
-    setAnnualSavings(annualSavingsCalc);
-    const totalSavingsCalc = annualSavingsCalc * LIFETIME_YEARS;
-    setTotalSavings(totalSavingsCalc);
-
-    // CO2 Reduction (tons per year)
-    const annualCO2Reduction = (offset * CO2_EMISSIONS_PER_KWH) / 1000;
-    setCo2Reduction(annualCO2Reduction);
-
-    // Roof area required
-    const totalAreaNeeded = unitsNeeded * selectedPanel.areaPer500W;
-    setRoofAreaRequired(totalAreaNeeded);
-
-    // Base cost (no GST)
-    const baseCost = unitsNeeded * selectedPanel.costPer500WUnit;
-    setTotalSystemCost(baseCost);
-
-    // GST amount
-    const gst = baseCost * GST_RATE;
-    setGstAmount(gst);
-
-    // Total cost with GST
-    const costWithGST = baseCost + gst;
-    setTotalCostWithGST(costWithGST);
-
-    // Subsidy calculation
-    let S = requiredSystemSizeCalc;
-    let computedSubsidy = 0;
-    if (S <= 2) {
-      computedSubsidy = S * 30000;
-    } else if (S <= 3) {
-      computedSubsidy = 60000 + (S - 2) * 18000;
-    } else {
-      computedSubsidy = 78000; // capped at 3kW
-    }
-    setSubsidy(computedSubsidy);
-
-    // Cost after subsidy
-    const finalCost = Math.max(costWithGST - computedSubsidy, 0);
-    setCostAfterSubsidy(finalCost);
-
-    // Payback period
-    const payback = annualSavingsCalc > 0 ? finalCost / annualSavingsCalc : Infinity;
-    setPaybackPeriod(payback);
-
-    // Energy chart data
-    setEnergyChartData([
-      {
-        name: "Annual",
-        production: parseFloat(annualProduction.toFixed(2)),
-        consumption: parseFloat(yearlyConsumption.toFixed(2)),
-      },
-    ]);
-
-    // Monthly bill from Firebase (if present) or fallback from usage * tariff
-    const monthlyBillAmount =
-      typeof consumptionData.monthlyBill === "number"
-        ? consumptionData.monthlyBill
-        : (yearlyConsumption / 12) * tariffRate;
-
-    // Loan + EMI + post-solar bill breakdown (uses Firebase-backed values)
-    calculateLoanAndBill(finalCost, annualSavingsCalc, monthlyBillAmount);
-  };
 
 const downloadReport = () => {
   const input = reportRef.current;
@@ -732,8 +637,8 @@ const downloadReport = () => {
   }
 
   const totalRoofSpace = solarData?.area || 0;
-  const orientation = solarData?.sunPosition
-    ? getOrientationFromAzimuth(solarData.sunPosition.azimuth)
+  const orientation = solarData
+    ? getOptimalOrientation(userLocation?.latitude)
     : "Unknown";
 
   const renderPanelCards = (panelOptions: PanelType[]) => {
@@ -829,18 +734,27 @@ const downloadReport = () => {
               <div className="report-summary-item">
                 <dt>Payback (years)</dt>
                 <dd>
-                  {isFinite(paybackPeriod)
-                    ? `${paybackPeriod.toFixed(2)} years`
-                    : "N/A"}
+                  {formatPayback(paybackPeriod)}
+                  <span className="report-summary-note">
+                    {`after ₹${formatINR(subsidy)} subsidy`}
+                  </span>
                 </dd>
               </div>
               <div className="report-summary-item">
-                <dt>Annual Savings</dt>
-                <dd>{`₹${formatINR(annualSavings)}`}</dd>
+                <dt>Estimated Annual Savings</dt>
+                <dd>
+                  {`₹${formatINR(annualSavings)}`}
+                  <span className="report-summary-note">bill before solar minus bill after</span>
+                </dd>
               </div>
               <div className="report-summary-item">
-                <dt>Required System Size</dt>
-                <dd>{`${requiredSystemSize.toFixed(2)} kW`}</dd>
+                <dt>Selected System</dt>
+                <dd>
+                  {formatKW(selectedSystemKW)}
+                  <span className="report-summary-note">
+                    {`${numberOfUnits500W} × ${PANEL_UNIT_WATTS} W · target ${formatKW(targetSystemKW)}`}
+                  </span>
+                </dd>
               </div>
             </dl>
           </StaggerItem>
@@ -922,10 +836,10 @@ const downloadReport = () => {
                   icon={<Battery className="report-metric-icon report-blue-icon" />}
                   metrics={[
                     {
-                      label: "Monthly Usage",
-                      value: `${
-                        consumptionData ? consumptionData.consumptionFromBill.toFixed(2) : 0
-                      } kWh`,
+                      label: consumptionFromUnits
+                        ? "Monthly Usage (units on your bill)"
+                        : "Monthly Usage (estimated from bill amount)",
+                      value: `${monthlyUsage.toFixed(2)} kWh`,
                     },
                     {
                       label: "Yearly Usage",
@@ -941,11 +855,15 @@ const downloadReport = () => {
                   icon={<Sun className="report-metric-icon report-blue-icon" />}
                   metrics={[
                     {
-                      label: "Annual Production",
+                      label: `Annual Production (${formatKW(selectedSystemKW)} system, year 1)`,
                       value: `${annualProductionValue.toFixed(2)} kWh`,
                     },
+                    {
+                      label: "Surplus Over Your Usage",
+                      value: `${surplusUnits.toFixed(2)} kWh`,
+                    },
                   ]}
-                  dataDescription="How much solar energy your system can generate in one year"
+                  dataDescription="How much energy the selected system can generate in its first year"
                 />
 
                 {/* System Capacity */}
@@ -954,11 +872,21 @@ const downloadReport = () => {
                   icon={<Zap className="report-metric-icon report-blue-icon" />}
                   metrics={[
                     {
-                      label: "Required System Size",
-                      value: `${requiredSystemSize.toFixed(2)} kW`,
+                      label: "Roof Potential (whole roof, max)",
+                      value: formatKW(roofPotentialKW),
+                    },
+                    {
+                      label: "Target (to match your usage)",
+                      value: formatKW(targetSystemKW),
+                    },
+                    {
+                      label: limitedByRoof
+                        ? "Selected System (limited by roof space)"
+                        : "Selected System (quoted and used for all figures)",
+                      value: selectedSystemLabel,
                     },
                   ]}
-                  dataDescription="The size of the solar system needed to meet your energy demands"
+                  dataDescription="Roof potential is the most your roof could hold. Target is the size that matches your usage. The selected system is the target rounded up to whole 500 W panels: it is what is priced, and every generation, savings and payback figure uses it."
                 />
 
                 {/* Irradiance */}
@@ -1037,11 +965,15 @@ const downloadReport = () => {
                 icon={<Layers className="report-metric-icon report-blue-icon" />}
                 metrics={[
                   {
-                    label: "500W Units Required",
+                    label: "500W Units Quoted",
                     value: `${numberOfUnits500W}`,
                   },
+                  {
+                    label: "Selected System",
+                    value: selectedSystemLabel,
+                  },
                 ]}
-                dataDescription="How many 500W solar panel units are needed for your system"
+                dataDescription="How many 500W solar panel units are quoted, and the system size they make"
               />
             </div>
           </StaggerItem>
@@ -1055,7 +987,10 @@ const downloadReport = () => {
                 title="Base Cost"
                 icon={<ChartCandlestick className="report-metric-icon report-green-icon" />}
                 metrics={[
-                  { label: "Panel Cost (No GST)", value: `₹${formatINR(totalSystemCost)}` },
+                  {
+                    label: `Panel Cost (No GST) · ${numberOfUnits500W} × ₹${(selectedPanel?.costPer500WUnit ?? 0).toLocaleString("en-IN")}`,
+                    value: `₹${formatINR(totalSystemCost)}`,
+                  },
                 ]}
                 dataDescription="The total cost of the panels before GST is applied"
               />
@@ -1065,7 +1000,7 @@ const downloadReport = () => {
                 title="GST"
                 icon={<BadgeIndianRupee className="report-metric-icon report-green-icon" />}
                 metrics={[
-                  { label: "GST Amount (12%)", value: `₹${formatINR(gstAmount)}` },
+                  { label: `GST Amount (${Math.round(GST_RATE * 100)}%)`, value: `₹${formatINR(gstAmount)}` },
                 ]}
                 dataDescription="Goods and Services Tax applied on the solar panels"
               />
@@ -1085,9 +1020,12 @@ const downloadReport = () => {
                 title="Subsidy"
                 icon={<Building2 className="report-metric-icon report-green-icon" />}
                 metrics={[
-                  { label: "Eligible Subsidy", value: `₹${formatINR(subsidy)}` },
+                  {
+                    label: `Eligible Subsidy (PM Surya Ghar, on ${formatKW(selectedSystemKW)})`,
+                    value: `₹${formatINR(subsidy)}`,
+                  },
                 ]}
-                dataDescription="The government incentive that reduces your upfront solar installation cost"
+                dataDescription="Central subsidy on the installed capacity: ₹30,000/kW for the first 2 kW, ₹18,000 for the 3rd kW, capped at ₹78,000"
               />
 
               {/* Cost After Subsidy */}
@@ -1116,12 +1054,14 @@ const downloadReport = () => {
                 metrics={[
                   {
                     label: "Payback (years)",
-                    value: isFinite(paybackPeriod)
-                      ? `${paybackPeriod.toFixed(2)} years`
-                      : "N/A",
+                    value: formatPayback(paybackPeriod),
+                  },
+                  {
+                    label: "Cost Recovered",
+                    value: `₹${formatINR(costAfterSubsidy)} (after ₹${formatINR(subsidy)} subsidy)`,
                   },
                 ]}
-                dataDescription="How long it takes for your solar savings to cover the cost of the system"
+                dataDescription="How long the yearly savings below take to repay the cost after subsidy"
               />
 
               {/* Savings */}
@@ -1129,13 +1069,20 @@ const downloadReport = () => {
                 title="Savings"
                 icon={<PiggyBank className="report-metric-icon report-green-icon" />}
                 metrics={[
-                  { label: "Annual Savings", value: `₹${formatINR(annualSavings)}` },
                   {
-                    label: `${LIFETIME_YEARS}-Year Savings`,
+                    label: "Estimated Annual Savings (year 1)",
+                    value: `₹${formatINR(annualSavings)}`,
+                  },
+                  {
+                    label: `${LIFETIME_YEARS}-Year Savings (${(PANEL_DEGRADATION_PER_YEAR * 100).toFixed(1)}%/yr panel ageing, ${
+                      TARIFF_ESCALATION_PER_YEAR > 0
+                        ? `tariffs +${(TARIFF_ESCALATION_PER_YEAR * 100).toFixed(1)}%/yr`
+                        : "today's tariffs"
+                    })`,
                     value: `₹${formatINR(totalSavings)}`,
                   },
                 ]}
-                dataDescription="How much money you can save each year and over 25 years by using solar energy"
+                dataDescription="Annual savings are your bill before solar minus your estimated bill after solar. The 25-year figure is added up year by year as panel output declines."
               />
 
               {/* Carbon Footprint Reduction */}
@@ -1145,7 +1092,11 @@ const downloadReport = () => {
                   <h3 className="report-carbon-card-title">Carbon Footprint Reduction</h3>
                 </div>
                 <div className="report-carbon-card-content">
-                  <CarbonFootprintReduction reduction={co2Reduction} />
+                  <CarbonFootprintReduction
+                    reduction={co2Reduction}
+                    usageCoveredShare={usageCoveredShare}
+                    co2KgPerKwh={CO2_KG_PER_KWH}
+                  />
                 </div>
               </Card>
             </div>
@@ -1182,11 +1133,22 @@ const downloadReport = () => {
                     value: `₹${formatINR(monthlyCostWithoutSolar)}`,
                   },
                   {
-                    label: "Post-Solar Monthly Bill (approx.)",
+                    label:
+                      fixedChargesMonthly > 0
+                        ? `Post-Solar Monthly Bill (incl. ₹${formatINR(fixedChargesMonthly)} fixed charges)`
+                        : "Post-Solar Monthly Bill (approx.)",
                     value: `₹${formatINR(postSolarBill)}`,
                   },
+                  ...(annualExportCredit > 0
+                    ? [
+                        {
+                          label: "Export Credit (per month)",
+                          value: `₹${formatINR(annualExportCredit / 12)}`,
+                        },
+                      ]
+                    : []),
                 ]}
-                dataDescription="Your electricity bill before solar and the estimated bill after installing solar"
+                dataDescription="Your electricity bill before solar and the estimated bill after installing solar: fixed charges plus any units solar does not cover"
               />
 
               {/* EMI & Net Savings */}
@@ -1265,6 +1227,15 @@ const downloadReport = () => {
             A planning estimate. Prices cover panels by the 500 W unit; shade,
             inverter, mounting and installation are not included. Subsidy and
             net metering eligibility are confirmed by your distribution company.
+            Savings assume net metering: solar units offset the units you buy
+            over the year,{" "}
+            {fixedChargesMonthly > 0
+              ? `the ₹${formatINR(fixedChargesMonthly)}/month fixed charges you entered stay payable`
+              : "fixed charges are taken as ₹0 (enter them on the bill page if your bill has them)"}
+            {EXPORT_CREDIT_RATE > 0
+              ? `, and surplus units are credited at ₹${EXPORT_CREDIT_RATE.toFixed(2)}/unit.`
+              : ", and surplus units are not counted as savings because export payment varies by distribution company."}{" "}
+            The {LIFETIME_YEARS}-year figure is not adjusted for maintenance.
           </StaggerItem>
 
           {/* Action Buttons */}
